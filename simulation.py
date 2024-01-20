@@ -5,49 +5,35 @@ import threading
 import pygame
 import sys
 import os
+import cv2
 import numpy as np
 
 
 # Default values of signal times
 defaultRed = 150
-defaultYellow = 1.2
+defaultYellow = 1.6
 defaultGreen = 20
 defaultMinimum = 10
 defaultMaximum = 60
 
 signals = []
 noOfSignals = 4
-simTime = 300       # change this to change time of simulation
+simTime = 9999       # change this to change time of simulation
 timeElapsed = 0
 
 currentGreen = 0   # Indicates which signal is green
 nextGreen = (currentGreen+1)%noOfSignals
 currentYellow = 0   # Indicates whether yellow signal is on or off 
-
-# Average times for vehicles to pass the intersection
-carTime = 0.4
-bikeTime = 0.1
-rickshawTime = 0.5
-busTime = 0.6
-truckTime = 0.6
-
-# Count of cars at a traffic signal
-noOfCars = 0
-noOfBikes = 0
-noOfBuses =0
-noOfTrucks = 0
-noOfRickshaws = 0
-noOfLanes = 2
 score=0
 
-speeds = {'car':2.25, 'bus':1.8, 'truck':1.8, 'rickshaw':2, 'bike':2.5}  # average speeds of vehicles
+speeds = {'car1':2.6,'car2':3,'truck2':3,'truck1':3.9,'bus':4,'bike1':3,'bike2':5,'auto':3}  # average speeds of vehicles
 
 # Coordinates of start
 x = {'right':[0,0,0], 'down':[755,727,697], 'left':[1400,1400,1400], 'up':[602,627,657]}    
 y = {'right':[348,370,398], 'down':[0,0,0], 'left':[498,466,436], 'up':[800,800,800]}
 
 vehicles = {'right': {0:[], 1:[], 2:[], 'crossed':0}, 'down': {0:[], 1:[], 2:[], 'crossed':0}, 'left': {0:[], 1:[], 2:[], 'crossed':0}, 'up': {0:[], 1:[], 2:[], 'crossed':0}}
-vehicleTypes = {0:'car', 1:'bus', 2:'truck', 3:'rickshaw', 4:'bike'}
+vehicleTypes = {0:'car1', 1:'car2',2:'truck2',3:'truck1',4:'bus',5:'bike1',6:'bike2',7:'auto'}
 directionNumbers = {0:'right', 1:'down', 2:'left', 3:'up'}
 
 # Coordinates of signal image, timer, and vehicle count
@@ -341,8 +327,8 @@ def generateVehicles():
             time.sleep(10)
             continue
 
-        vehicle_type = random.randint(0,4)
-        if(vehicle_type==4):
+        vehicle_type = random.randint(0,7)
+        if(vehicle_type==5 or vehicle_type==6):
             lane_number = 0
         else:
             lane_number = random.randint(0,1) + 1
