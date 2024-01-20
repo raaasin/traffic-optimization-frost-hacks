@@ -27,8 +27,8 @@ currentYellow = 0   # Indicates whether yellow signal is on or off
 carTime = 1.8
 bikeTime = 1.5
 rickshawTime = 1.8
-busTime = 3.5
-truckTime = 3.9
+busTime = 3
+truckTime = 3.1
 
 # Count of cars at a traffic signal
 noOfCars = 0
@@ -38,8 +38,6 @@ noOfTrucks = 0
 noOfRickshaws = 0
 noOfLanes = 2
 score=0
-# Red signal time at which cars will be detected at a signal
-detectionTime = 5
 
 speeds = {'car':2.25, 'bus':1.8, 'truck':1.8, 'rickshaw':2, 'bike':2.5}  # average speeds of vehicles
 
@@ -334,8 +332,8 @@ def generateVehicles():
     while(True):
         tcars=data()
         tcars=tcars['A'][0]+tcars['B'][0]+tcars['C'][0]+tcars['D'][0]
-        if tcars>35:
-            time.sleep(4)
+        if tcars>30:
+            time.sleep(10)
             continue
 
         vehicle_type = random.randint(0,4)
@@ -381,6 +379,7 @@ def simulationTime():
             os._exit(1)
     
 def data():
+    global score
     num_vehicles = {
         "A": len(vehicles[directionNumbers[0]][0]) + len(vehicles[directionNumbers[0]][1]) + len(vehicles[directionNumbers[0]][2]) - vehicles[directionNumbers[0]]['crossed'],
         "B": len(vehicles[directionNumbers[1]][0]) + len(vehicles[directionNumbers[1]][1]) + len(vehicles[directionNumbers[1]][2]) - vehicles[directionNumbers[1]]['crossed'],
@@ -402,8 +401,12 @@ def data():
     directionNumber = {'A': 0, 'B': 1, 'C': 2, 'D': 3}
     for direction in ["A", "B", "C", "D"]:
         combined_data[direction] = [num_vehicles[direction], max_wait_times.get(directionNumber[direction], 0)]
+    
+    combined_data['S']=score
 
     return combined_data
+
+
 class Main:
     score_font = pygame.font.Font(None, 80) 
     thread4 = threading.Thread(name="simulationTime",target=simulationTime, args=()) 
@@ -486,19 +489,18 @@ class Main:
             if vehicle.starvation_timer_start is not None:
                 wait_time = time.time() - vehicle.starvation_timer_start
                 if wait_time > 25:
-                    score -=20
-                    vehicle.starvation_timer_start = None
+                    score -=0.01
                 font = pygame.font.Font(None, 25)
                 text = font.render(f"{wait_time:.2f}", True, (0, 0, 0))
                 screen.blit(text, (vehicle.x, vehicle.y - 20))    
             screen.blit(vehicle.currentImage, [vehicle.x, vehicle.y])
             # vehicle.render(screen)
             vehicle.move()
-        #print(data())
         score_text = score_font.render(f"Score: {int(score)}", True, (0, 0, 0))
         text_width = score_text.get_width()
         screen.blit(score_text, ((screenWidth - text_width) // 2, 10))  # Center top
         pygame.display.update()
+
 
 Main()
 
