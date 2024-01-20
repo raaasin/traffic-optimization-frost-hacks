@@ -1,21 +1,18 @@
 import gym
 from gym import spaces
 import numpy as np
-import time
 import socket
 import threading
 import json
 from stable_baselines3 import PPO
 import subprocess
+import time
 
 client_sockets = []
 lock = threading.Lock()
 
 
 def restart_game():
-    # Add logic to restart the game here
-    # You might want to start a new instance of the simulation.py script or perform other relevant actions.
-    # Example:
     subprocess.run(["python", "simulation.py"])
     env.reset()
     
@@ -89,14 +86,26 @@ def reinforcement(data, env):
 def handle_client(client_socket, env):
     global data
     while True:
+        # Clear the previous data
+        data = None
+        
         received_data = client_socket.recv(1024).decode('utf-8')
         with lock:
             try:
                 data = json.loads(received_data)
-                action = reinforcement(data, env)
-                set_signal("hello!")
+
+                # Check if the score is below the threshold, restart the game
+                if 'S' in data and data['S'] < env.score_threshold:
+                    print("Score is below the threshold. Restarting the game...")
+                    restart_game()
+
+                # Continue with reinforcement logic
+                action = reinforcement(data)
                 set_signal(action)
-                print("Updated data:", data)
+                
+                # Introduce a delay (e.g., 2 seconds) to simulate the traffic signal reaction time
+                time.sleep(2)
+                
             except json.JSONDecodeError:
                 try:
                     data = eval(received_data)
@@ -112,9 +121,8 @@ def set_signal(x):
     x = str(x)
     print("Sending signal:", x)
     try:
-        with lock:
-            for client_socket in client_sockets:
-                client_socket.sendall(x.encode('utf-8'))
+        for client_socket in client_sockets:
+            client_socket.sendall(x.encode('utf-8'))
     except Exception as e:
         print("Error sending signal:", str(e))
     else:

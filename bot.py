@@ -12,7 +12,7 @@ import json
 
 # Default values of signal times
 defaultRed = 150
-defaultYellow = 1.6
+defaultYellow = 1.2
 defaultGreen = 20
 defaultMinimum = 10
 defaultMaximum = 60
@@ -57,22 +57,28 @@ gap2 = 15   # moving gap
 
 pygame.init()
 simulation = pygame.sprite.Group()
-
+client_sockets = []
+lock = threading.Lock()
 client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server_address = ('localhost', 12345)
 client_socket.connect(server_address)
 
 def receive_messages():
     while True:
-        # Receive a message from the server
-        message = client_socket.recv(1024).decode('utf-8')
-        print(f"Server says: {message}")
         try:
-            setSignalGreen(int(message))
-        except:
-            print("didnt work",message)
-            pass
-        
+            # Receive a message from the server
+            message = client_socket.recv(1024).decode('utf-8')
+
+
+            print(f"Server says: {message}")
+            try:
+                setSignalGreen(int(message))
+            except Exception as e:
+                pass
+
+        except ConnectionError:
+            print("Connection to server lost.")
+            break
 
 
 
