@@ -455,31 +455,23 @@ class Main:
             signal.update_timer()
 
         screen.blit(background,(0,0))   # display background in simulation
-        for i in range(0,noOfSignals):  # display signal and set timer according to current status: green, yello, or red
+        for i in range(0,noOfSignals):  # display signal and set timer according to current status: green, yellow, or red
             if(i==currentGreen):
-                if(currentYellow==1):
-                    if(signals[i].yellow==0):
-                        signals[i].signalText = "STOP"
-                    else:
-                        signals[i].signalText = signals[i].yellow
-                    screen.blit(yellowSignal, signalCoods[i])
-                else:
-                    if(signals[i].green==0):
-                        signals[i].signalText = "SLOW"
-                    else:
-                        signals[i].signalText = signals[i].green
-                    screen.blit(greenSignal, signalCoods[i])
+                signals[i].signalText = "GO"
+                screen.blit(greenSignal, signalCoods[i])
+            elif(i==currentYellow):
+                signals[i].signalText = "WAIT"
+                screen.blit(yellowSignal, signalCoods[i])
             else:
-                if(signals[i].red<=10):
-                    if(signals[i].red==0):
-                        signals[i].signalText = "GO"
-                    else:
-                        signals[i].signalText = signals[i].red
-                else:
-                    signals[i].signalText = "---"
+                signals[i].signalText = "STOP"
                 screen.blit(redSignal, signalCoods[i])
         global score
-        # display the vehicles
+        signalTexts = ["","","",""]
+
+        # display signal timer and vehicle count
+        for i in range(0,noOfSignals):  
+            signalTexts[i] = font.render(str(signals[i].signalText), True, white, black)
+            screen.blit(signalTexts[i],signalTimerCoods[i]) 
         for vehicle in simulation:  
             if vehicle.starvation_timer_start is not None:
                 wait_time = time.time() - vehicle.starvation_timer_start
