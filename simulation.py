@@ -332,7 +332,7 @@ def generateVehicles():
     while(True):
         tcars=data()
         tcars=tcars['A'][0]+tcars['B'][0]+tcars['C'][0]+tcars['D'][0]
-        if tcars>40:
+        if tcars>30:
             time.sleep(10)
             continue
 
@@ -360,7 +360,7 @@ def generateVehicles():
         elif(temp<a[3]):
             direction_number = 3
         Vehicle(lane_number, vehicleTypes[vehicle_type], direction_number, directionNumbers[direction_number], will_turn)
-        time.sleep(0.075)
+        time.sleep(0.33)
 
 def simulationTime():
     global timeElapsed, simTime
@@ -492,7 +492,7 @@ class Main:
             if vehicle.starvation_timer_start is not None:
                 wait_time = time.time() - vehicle.starvation_timer_start
                 if wait_time > 25:
-                    score -=0.01
+                    score -=0.09
                 font = pygame.font.Font(None, 25)
                 text = font.render(f"{wait_time:.2f}", True, (0, 0, 0))
                 screen.blit(text, (vehicle.x, vehicle.y - 20))    
