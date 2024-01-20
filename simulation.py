@@ -396,6 +396,8 @@ def data():
             else:
                 max_wait_times[vehicle.direction_number] = max(max_wait_times[vehicle.direction_number], wait_time)
 
+    
+
     # Combine the number of vehicles and the maximum wait times into a single dictionary
     combined_data = {}
     directionNumber = {'A': 0, 'B': 1, 'C': 2, 'D': 3}
@@ -453,6 +455,7 @@ class Main:
                 # Check if a signal was clicked
                 for i in range(noOfSignals):
                     signalRect = redSignal.get_rect(topleft=signalCoods[i])  # Replace with your signal dimensions
+                    signalRect.inflate_ip(90,90)  # Add extra hitbox of 60px radius
                     if signalRect.collidepoint(pos):
                         setSignalGreen(i)
                         break
@@ -496,6 +499,16 @@ class Main:
             screen.blit(vehicle.currentImage, [vehicle.x, vehicle.y])
             # vehicle.render(screen)
             vehicle.move()
+        arrow=pygame.image.load('images/arrow.png')
+        arrow = pygame.transform.scale(arrow, (40, 40))
+        left=pygame.transform.rotate(arrow, 0)
+        up = pygame.transform.rotate(arrow, 270)
+        down=pygame.transform.rotate(arrow, 90)
+        right = pygame.transform.rotate(arrow, 180)
+        screen.blit(up, (480, 600))
+        screen.blit(left, (850, 600))
+        screen.blit(down, (850, 250))
+        screen.blit(right, (480, 250))
         score_text = score_font.render(f"Score: {int(score)}", True, (0, 0, 0))
         text_width = score_text.get_width()
         screen.blit(score_text, ((screenWidth - text_width) // 2, 10))  # Center top
