@@ -6,79 +6,80 @@ import socket
 import threading
 import json
 from stable_baselines3 import PPO
+import subprocess
 
 client_sockets = []
 lock = threading.Lock()
 
+
+def restart_game():
+    # Add logic to restart the game here
+    # You might want to start a new instance of the simulation.py script or perform other relevant actions.
+    # Example:
+    subprocess.run(["python", "simulation.py"])
+    env.reset()
+    
 class TrafficSignalEnv(gym.Env):
     def __init__(self):
         super(TrafficSignalEnv, self).__init__()
 
-        # Define action and observation space
         self.action_space = spaces.Discrete(4)
 
-        self.observation_space = spaces.Dict({
-            'A': spaces.Tuple([spaces.Discrete(11), spaces.Discrete(101)]),
-            'B': spaces.Tuple([spaces.Discrete(11), spaces.Discrete(101)]),
-            'C': spaces.Tuple([spaces.Discrete(11), spaces.Discrete(101)]),
-            'D': spaces.Tuple([spaces.Discrete(11), spaces.Discrete(101)]),
-            'Score': spaces.Discrete(1001)
-        })
+        # Flatten the observation space
+        self.observation_space = spaces.Box(low=0, high=101, shape=(8,), dtype=np.float32)
 
-        self.state = {
-            'A': (0, 0),
-            'B': (0, 0),
-            'C': (0, 0),
-            'D': (0, 0),
-            'Score': 0
-        }
-
+        self.state = np.zeros(8)
         self.score_threshold = 25
 
     def reset(self):
-        self.state = {
-            'A': (0, 0),
-            'B': (0, 0),
-            'C': (0, 0),
-            'D': (0, 0),
-            'Score': 0
-        }
+        # Inform the agent that a new episode is starting
+        self.state = np.zeros(8)
         return self.state
 
     def step(self, action):
+        # Perform the selected action and update the environment state
         set_signal(action)
 
-        wait_times = {
-            'A': max(0, self.state['A'][1] - 1),
-            'B': max(0, self.state['B'][1] - 1),
-            'C': max(0, self.state['C'][1] - 1),
-            'D': max(0, self.state['D'][1] - 1)
-        }
+        wait_times = [
+            max(0, self.state[1] - 1),
+            max(0, self.state[3] - 1),
+            max(0, self.state[5] - 1),
+            max(0, self.state[7] - 1)
+        ]
 
-        total_wait_time = sum(wait_times.values())
+        total_wait_time = sum(wait_times)
         reward = -total_wait_time
 
         bonus_threshold = 10
-        for road, wait_time in wait_times.items():
+        for i, wait_time in enumerate(wait_times):
             if wait_time < bonus_threshold:
                 reward += 5
+            self.state[2 * i] = wait_time  # Update the wait times in the state
 
-        self.state['Score'] += reward
-        done = self.state['Score'] < -200
+        self.state[-1] += reward  # Update the score in the state
+
+        # Check for the episode termination condition
+        done = self.state[-1] < -200
 
         return self.state, reward, done, {}
+
+
 
 def reinforcement(data, env):
     A_cars, B_cars, C_cars, D_cars = data['A'][0], data['B'][0], data['C'][0], data['D'][0]
     A_wait, B_wait, C_wait, D_wait = data['A'][1], data['B'][1], data['C'][1], data['D'][1]
     score = data['S']
+    print(score)
+    if score <-198:
+        restart_game()
+        return 0
 
     env.state = {
         'A': (A_cars, A_wait),
         'B': (B_cars, B_wait),
         'C': (C_cars, C_wait),
         'D': (D_cars, D_wait),
-        'Score': score
+        'Score': score,
     }
 
     # In reinforcement, you should ideally return the action chosen by the agent, not a random action
@@ -93,7 +94,9 @@ def handle_client(client_socket, env):
             try:
                 data = json.loads(received_data)
                 action = reinforcement(data, env)
+                set_signal("hello!")
                 set_signal(action)
+                print("Updated data:", data)
             except json.JSONDecodeError:
                 try:
                     data = eval(received_data)
@@ -104,11 +107,18 @@ def handle_client(client_socket, env):
                     print(f"Error processing received data: {e}")
                     continue
 
+
 def set_signal(x):
     x = str(x)
-    with lock:
-        for client_socket in client_sockets:
-            client_socket.sendall(x.encode('utf-8'))
+    print("Sending signal:", x)
+    try:
+        with lock:
+            for client_socket in client_sockets:
+                client_socket.sendall(x.encode('utf-8'))
+    except Exception as e:
+        print("Error sending signal:", str(e))
+    else:
+        print("Signal sent")
 
 def main():
     env = TrafficSignalEnv()

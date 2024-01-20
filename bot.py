@@ -58,6 +58,10 @@ gap2 = 15   # moving gap
 pygame.init()
 simulation = pygame.sprite.Group()
 
+client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+server_address = ('localhost', 12345)
+client_socket.connect(server_address)
+
 def receive_messages():
     while True:
         # Receive a message from the server
@@ -70,11 +74,7 @@ def receive_messages():
             pass
         
 
-client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-server_address = ('localhost', 12345)
-client_socket.connect(server_address)
-receive_messages_thread = threading.Thread(target=receive_messages)
-receive_messages_thread.start()
+
 
 
 def send(data):
@@ -128,7 +128,6 @@ class Vehicle(pygame.sprite.Sprite):
         self.originalImage = pygame.image.load(path)
         self.currentImage = pygame.image.load(path)
 
-    
         if(direction=='right'):
             if(len(vehicles[direction][lane])>1 and vehicles[direction][lane][self.index-1].crossed==0):    # if more than 1 vehicle in the lane of vehicle before it has crossed stop line
                 self.stop = vehicles[direction][lane][self.index-1].stop - vehicles[direction][lane][self.index-1].currentImage.get_rect().width - gap         # setting stop coordinate as: stop coordinate of next vehicle - width of next vehicle - gap
@@ -164,6 +163,10 @@ class Vehicle(pygame.sprite.Sprite):
             stops[direction][lane] += temp
         simulation.add(self)
 
+    def kill(self):
+        self.starvation_timer_start = None
+        pygame.sprite.Sprite.kill(self)
+        
     
     def render(self, screen):
         if self.starvation_timer_start is not None:
@@ -341,14 +344,13 @@ def updateValues():
                 signals[i].yellow-=1
         else:
             signals[i].red-=1
-
 # Generating vehicles in the simulation
 def generateVehicles():
     while(True):
         tcars=data()
         tcars=tcars['A'][0]+tcars['B'][0]+tcars['C'][0]+tcars['D'][0]
-        if tcars>30:
-            time.sleep(10)
+        if tcars>(30):
+            time.sleep(3)
             continue
 
         vehicle_type = random.randint(0,7)
@@ -426,10 +428,14 @@ def data():
 
 
 class Main:
+    global score
     score_font = pygame.font.Font(None, 80) 
     thread4 = threading.Thread(name="simulationTime",target=simulationTime, args=()) 
     thread4.daemon = True
     thread4.start()
+ 
+    receive_messages_thread = threading.Thread(target=receive_messages)
+    receive_messages_thread.start()
 
     thread2 = threading.Thread(name="initialization",target=initialize, args=())    # initialization
     thread2.daemon = True
@@ -439,7 +445,6 @@ class Main:
     black = (0, 0, 0)
     white = (255, 255, 255)
 
-    # Screensize 
     screenWidth = 1400
     screenHeight = 800
     screenSize = (screenWidth, screenHeight)
@@ -489,10 +494,8 @@ class Main:
             else:
                 signals[i].signalText = "STOP"
                 screen.blit(redSignal, signalCoods[i])
-        global score
         signalTexts = ["","","",""]
 
-        # display signal timer and vehicle count
         for i in range(0,noOfSignals):  
             signalTexts[i] = font.render(str(signals[i].signalText), True, white, black)
             screen.blit(signalTexts[i],signalTimerCoods[i]) 
@@ -522,8 +525,6 @@ class Main:
         send(data())
         screen.blit(score_text, ((screenWidth - text_width) // 2, 10))  # Center top
         pygame.display.update()
-
-
 Main()
 
   
