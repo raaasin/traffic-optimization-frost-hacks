@@ -1,28 +1,11 @@
-#use default simulation code
-# LAG
-# NO. OF VEHICLES IN SIGNAL CLASS
-# stops not used
-# DISTRIBUTION
-# BUS TOUCHING ON TURNS
-# Distribution using python class   
-
-# *** IMAGE XY COOD IS TOP LEFT
 import random
 import math
 import time
 import threading
-# from vehicle_detection import detection
 import pygame
 import sys
 import os
 
-# options={
-#    'model':'./cfg/yolo.cfg',     #specifying the path of model
-#    'load':'./bin/yolov2.weights',   #weights
-#    'threshold':0.3     #minimum confidence factor to create a box, greater than 0.3 good
-# }
-
-# tfnet=TFNet(options)    #READ ABOUT TFNET
 
 # Default values of signal times
 defaultRed = 150
@@ -41,11 +24,11 @@ nextGreen = (currentGreen+1)%noOfSignals
 currentYellow = 0   # Indicates whether yellow signal is on or off 
 
 # Average times for vehicles to pass the intersection
-carTime = 2
-bikeTime = 1
-rickshawTime = 2.25 
-busTime = 2.5
-truckTime = 2.5
+carTime = 5
+bikeTime = 3
+rickshawTime = 5.25 
+busTime = 7.5
+truckTime = 7.9
 
 # Count of cars at a traffic signal
 noOfCars = 0
@@ -98,6 +81,20 @@ class TrafficSignal:
         self.maximum = maximum
         self.signalText = "30"
         self.totalGreenTime = 0
+    def update_timer(self):
+        if self.green > 0:
+            self.green -= 1
+        elif self.yellow > 0:
+            self.yellow -= 1
+        else:
+            self.red -= 1
+            if self.red == 0:
+                self.reset()
+
+    def reset(self):
+        self.red = defaultRed
+        self.yellow = defaultYellow
+        self.green = defaultGreen    
         
 class Vehicle(pygame.sprite.Sprite):
     def __init__(self, lane, vehicleClass, direction_number, direction, will_turn):
@@ -168,7 +165,6 @@ class Vehicle(pygame.sprite.Sprite):
     def move(self):
         if self.crossed == 1 and self.starvation_timer_start is not None:
             wait_time = time.time() - self.starvation_timer_start
-            print(f"Wait time: {wait_time} seconds")
             self.starvation_timer_start = None        
         if(self.direction=='right'):
             if(self.crossed==0 and self.x+self.currentImage.get_rect().width>stopLines[self.direction]):   # if the image has crossed stop line now
@@ -277,107 +273,30 @@ class Vehicle(pygame.sprite.Sprite):
 
 # Initialization of signals with default values
 def initialize():
-    ts1 = TrafficSignal(0, defaultYellow, defaultGreen, defaultMinimum, defaultMaximum)
+    ts1 = TrafficSignal(defaultRed, defaultYellow, defaultGreen, defaultMinimum, defaultMaximum)
     signals.append(ts1)
-    ts2 = TrafficSignal(ts1.red+ts1.yellow+ts1.green, defaultYellow, defaultGreen, defaultMinimum, defaultMaximum)
+    ts2 = TrafficSignal(defaultRed, defaultYellow, defaultGreen, defaultMinimum, defaultMaximum)
     signals.append(ts2)
     ts3 = TrafficSignal(defaultRed, defaultYellow, defaultGreen, defaultMinimum, defaultMaximum)
     signals.append(ts3)
     ts4 = TrafficSignal(defaultRed, defaultYellow, defaultGreen, defaultMinimum, defaultMaximum)
     signals.append(ts4)
-    repeat()
 
-# Set time according to formula
-def setTime():
-    global noOfCars, noOfBikes, noOfBuses, noOfTrucks, noOfRickshaws, noOfLanes
-    global carTime, busTime, truckTime, rickshawTime, bikeTime
-    os.system("say detecting vehicles, "+directionNumbers[(currentGreen+1)%noOfSignals])
-#    detection_result=detection(currentGreen,tfnet)
-#    greenTime = math.ceil(((noOfCars*carTime) + (noOfRickshaws*rickshawTime) + (noOfBuses*busTime) + (noOfBikes*bikeTime))/(noOfLanes+1))
-#    if(greenTime<defaultMinimum):
-#       greenTime = defaultMinimum
-#    elif(greenTime>defaultMaximum):
-#       greenTime = defaultMaximum
-    # greenTime = len(vehicles[currentGreen][0])+len(vehicles[currentGreen][1])+len(vehicles[currentGreen][2])
-    # noOfVehicles = len(vehicles[directionNumbers[nextGreen]][1])+len(vehicles[directionNumbers[nextGreen]][2])-vehicles[directionNumbers[nextGreen]]['crossed']
-    # print("no. of vehicles = ",noOfVehicles)
-    noOfCars, noOfBuses, noOfTrucks, noOfRickshaws, noOfBikes = 0,0,0,0,0
-    for j in range(len(vehicles[directionNumbers[nextGreen]][0])):
-        vehicle = vehicles[directionNumbers[nextGreen]][0][j]
-        if(vehicle.crossed==0):
-            vclass = vehicle.vehicleClass
-            # print(vclass)
-            noOfBikes += 1
-    for i in range(1,3):
-        for j in range(len(vehicles[directionNumbers[nextGreen]][i])):
-            vehicle = vehicles[directionNumbers[nextGreen]][i][j]
-            if(vehicle.crossed==0):
-                vclass = vehicle.vehicleClass
-                # print(vclass)
-                if(vclass=='car'):
-                    noOfCars += 1
-                elif(vclass=='bus'):
-                    noOfBuses += 1
-                elif(vclass=='truck'):
-                    noOfTrucks += 1
-                elif(vclass=='rickshaw'):
-                    noOfRickshaws += 1
-    # print(noOfCars)
-    greenTime = math.ceil(((noOfCars*carTime) + (noOfRickshaws*rickshawTime) + (noOfBuses*busTime) + (noOfTrucks*truckTime)+ (noOfBikes*bikeTime))/(noOfLanes+1))
-    # greenTime = math.ceil((noOfVehicles)/noOfLanes) 
-    print('Green Time: ',greenTime)
-    if(greenTime<defaultMinimum):
-        greenTime = defaultMinimum
-    elif(greenTime>defaultMaximum):
-        greenTime = defaultMaximum
-    # greenTime = random.randint(15,50)
-    signals[(currentGreen+1)%(noOfSignals)].green = greenTime
-   
-def repeat():
-    global currentGreen, currentYellow, nextGreen
-    while(signals[currentGreen].green>0):   # while the timer of current green signal is not zero
-        printStatus()
-        updateValues()
-        if(signals[(currentGreen+1)%(noOfSignals)].red==detectionTime):    # set time of next green signal 
-            thread = threading.Thread(name="detection",target=setTime, args=())
-            thread.daemon = True
-            thread.start()
-            # setTime()
-        time.sleep(1)
-    currentYellow = 1   # set yellow signal on
-    vehicleCountTexts[currentGreen] = "0"
-    # reset stop coordinates of lanes and vehicles 
-    for i in range(0,3):
-        stops[directionNumbers[currentGreen]][i] = defaultStop[directionNumbers[currentGreen]]
-        for vehicle in vehicles[directionNumbers[currentGreen]][i]:
-            vehicle.stop = defaultStop[directionNumbers[currentGreen]]
-    while(signals[currentGreen].yellow>0):  # while the timer of current yellow signal is not zero
-        printStatus()
-        updateValues()
-        time.sleep(1)
-    currentYellow = 0   # set yellow signal off
-    
-    # reset all signal times of current signal to default times
-    signals[currentGreen].green = defaultGreen
-    signals[currentGreen].yellow = defaultYellow
-    signals[currentGreen].red = defaultRed
-       
-    currentGreen = nextGreen # set next signal as green signal
-    nextGreen = (currentGreen+1)%noOfSignals    # set next green signal
-    signals[nextGreen].red = signals[currentGreen].yellow+signals[currentGreen].green    # set the red time of next to next signal as (yellow time + green time) of next signal
-    repeat()     
+def setSignalGreen(signalIndex):
+    global currentGreen, currentYellow
+    # Set all signals to red
+    for signal in signals:
+        signal.red = defaultRed
+        signal.green = defaultGreen
+        signal.yellow = defaultYellow
 
-# Print the signal timers on cmd
-def printStatus():                                                                                           
-	for i in range(0, noOfSignals):
-		if(i==currentGreen):
-			if(currentYellow==0):
-				print(" GREEN TS",i+1,"-> r:",signals[i].red," y:",signals[i].yellow," g:",signals[i].green)
-			else:
-				print("YELLOW TS",i+1,"-> r:",signals[i].red," y:",signals[i].yellow," g:",signals[i].green)
-		else:
-			print("   RED TS",i+1,"-> r:",signals[i].red," y:",signals[i].yellow," g:",signals[i].green)
-	print()
+    # Set the selected signal to green
+    signals[signalIndex].green = defaultGreen
+    signals[signalIndex].red = defaultRed
+    signals[signalIndex].yellow = defaultYellow
+    currentGreen = signalIndex
+    currentYellow = 0  # Reset currentYellow
+
 
 # Update values of the signal timers after every second
 def updateValues():
@@ -475,6 +394,18 @@ class Main:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 sys.exit()
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                # Get mouse position
+                pos = pygame.mouse.get_pos()
+
+                # Check if a signal was clicked
+                for i in range(noOfSignals):
+                    signalRect = redSignal.get_rect(topleft=signalCoods[i])  # Replace with your signal dimensions
+                    if signalRect.collidepoint(pos):
+                        setSignalGreen(i)
+                        break
+        for signal in signals:
+            signal.update_timer()
 
         screen.blit(background,(0,0))   # display background in simulation
         for i in range(0,noOfSignals):  # display signal and set timer according to current status: green, yello, or red
@@ -500,20 +431,8 @@ class Main:
                 else:
                     signals[i].signalText = "---"
                 screen.blit(redSignal, signalCoods[i])
-        signalTexts = ["","","",""]
 
-        # display signal timer and vehicle count
-        for i in range(0,noOfSignals):  
-            signalTexts[i] = font.render(str(signals[i].signalText), True, white, black)
-            screen.blit(signalTexts[i],signalTimerCoods[i]) 
-            displayText = vehicles[directionNumbers[i]]['crossed']
-            vehicleCountTexts[i] = font.render(str(displayText), True, black, white)
-            screen.blit(vehicleCountTexts[i],vehicleCountCoods[i])
 
-        timeElapsedText = font.render(("Time Elapsed: "+str(timeElapsed)), True, black, white)
-        screen.blit(timeElapsedText,(1100,50))
-
-        # display the vehicles
         for vehicle in simulation:  
             if vehicle.starvation_timer_start is not None:
                 wait_time = time.time() - vehicle.starvation_timer_start
@@ -521,7 +440,6 @@ class Main:
                 text = font.render(f"{wait_time:.2f}", True, (0, 0, 0))
                 screen.blit(text, (vehicle.x, vehicle.y - 20))    
             screen.blit(vehicle.currentImage, [vehicle.x, vehicle.y])
-            # vehicle.render(screen)
             vehicle.move()
         pygame.display.update()
 
