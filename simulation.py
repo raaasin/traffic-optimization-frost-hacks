@@ -407,8 +407,8 @@ class Main:
         for signal in signals:
             signal.update_timer()
 
-        screen.blit(background,(0,0))   # display background in simulation
-        for i in range(0,noOfSignals):  # display signal and set timer according to current status: green, yello, or red
+        screen.blit(background,(0,0))   
+        for i in range(0,noOfSignals):  
             if(i==currentGreen):
                 if(currentYellow==1):
                     if(signals[i].yellow==0):
