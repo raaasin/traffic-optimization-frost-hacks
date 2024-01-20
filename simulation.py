@@ -24,11 +24,11 @@ nextGreen = (currentGreen+1)%noOfSignals
 currentYellow = 0   # Indicates whether yellow signal is on or off 
 
 # Average times for vehicles to pass the intersection
-carTime = 1.8
-bikeTime = 1.5
-rickshawTime = 1.8
-busTime = 3
-truckTime = 3.1
+carTime = 0.4
+bikeTime = 0.1
+rickshawTime = 0.5
+busTime = 0.6
+truckTime = 0.6
 
 # Count of cars at a traffic signal
 noOfCars = 0
@@ -332,7 +332,7 @@ def generateVehicles():
     while(True):
         tcars=data()
         tcars=tcars['A'][0]+tcars['B'][0]+tcars['C'][0]+tcars['D'][0]
-        if tcars>30:
+        if tcars>40:
             time.sleep(10)
             continue
 
@@ -360,7 +360,7 @@ def generateVehicles():
         elif(temp<a[3]):
             direction_number = 3
         Vehicle(lane_number, vehicleTypes[vehicle_type], direction_number, directionNumbers[direction_number], will_turn)
-        time.sleep(0.2)
+        time.sleep(0.075)
 
 def simulationTime():
     global timeElapsed, simTime
