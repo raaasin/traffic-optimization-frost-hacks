@@ -5,6 +5,8 @@ import threading
 import pygame
 import sys
 import os
+import cv2
+import numpy as np
 
 
 # Default values of signal times
@@ -110,6 +112,7 @@ class Vehicle(pygame.sprite.Sprite):
         self.turned = 0
         self.rotateAngle = 0
         vehicles[direction][lane].append(self)
+        self.hue=np.random.randint(0, 150)
         # self.stop = stops[direction][lane]
         self.index = len(vehicles[direction][lane]) - 1
         path = "images/" + direction + "/" + vehicleClass + ".png"
@@ -152,13 +155,16 @@ class Vehicle(pygame.sprite.Sprite):
             stops[direction][lane] += temp
         simulation.add(self)
 
+    
     def render(self, screen):
         if self.starvation_timer_start is not None:
             wait_time = time.time() - self.starvation_timer_start
             font = pygame.font.Font(None, 25)
             text = font.render(f"{wait_time:.2f} seconds", True, (0, 0, 0))
             screen.blit(text, (self.x, self.y - 20))
-        screen.blit(self.currentImage, (self.x, self.y))
+            
+        # Randomly change the hue of the image
+
 
     def move(self):
         if self.crossed == 1 and self.starvation_timer_start is not None:
@@ -409,6 +415,7 @@ def data():
     return combined_data
 
 
+
 class Main:
     score_font = pygame.font.Font(None, 80) 
     thread4 = threading.Thread(name="simulationTime",target=simulationTime, args=()) 
@@ -495,9 +502,9 @@ class Main:
                     score -=0.09
                 font = pygame.font.Font(None, 25)
                 text = font.render(f"{wait_time:.2f}", True, (0, 0, 0))
-                screen.blit(text, (vehicle.x, vehicle.y - 20))    
-            screen.blit(vehicle.currentImage, [vehicle.x, vehicle.y])
-            # vehicle.render(screen)
+                screen.blit(text, (vehicle.x, vehicle.y - 20))
+            current_image_array = vehicle.currentImage
+            screen.blit(current_image_array, [vehicle.x, vehicle.y])
             vehicle.move()
         arrow=pygame.image.load('images/arrow.png')
         arrow = pygame.transform.scale(arrow, (40, 40))
