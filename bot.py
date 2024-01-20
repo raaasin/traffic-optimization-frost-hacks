@@ -531,6 +531,8 @@ class Main:
         send(data())
         screen.blit(score_text, ((screenWidth - text_width) // 2, 10))  # Center top
         pygame.display.update()
+        if score<-200:
+            pygame.quit()
 Main()
 
   
