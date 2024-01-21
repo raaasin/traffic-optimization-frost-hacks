@@ -122,7 +122,7 @@ def main():
     client_handler.start()
 
     # Training parameters
-    total_episodes = 1000
+    total_episodes = 2500
 
     # Training loop with progress bar
     for episode in tqdm(range(1, total_episodes + 1), desc="Training Progress"):
@@ -131,13 +131,10 @@ def main():
         
         # For example, you can call PPO's `learn` method with appropriate parameters
         model = PPO("MlpPolicy", env, verbose=0)
-        model.learn(total_timesteps=1000)
+        model.learn(total_timesteps=2500)
 
     # After training is complete, you can save the model if needed
     model.save("trained_model")
-
-if __name__ == "__main__":
-    main()
 
 if __name__ == "__main__":
     main()
