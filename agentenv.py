@@ -64,16 +64,23 @@ client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server_address = ('localhost', 12345)
 client_socket.connect(server_address)
 
+lastSetSignalTime = time.time()
+
 def receive_messages():
+    global lastSetSignalTime
     while True:
         try:
             # Receive a message from the server
             message = client_socket.recv(1024).decode('utf-8')
 
-
-            print(f"Server says: {message}")
+            if int(message) == currentGreen:
+                pass
             try:
-                setSignalGreen(int(message))
+                currentTime = time.time()
+                if currentTime - lastSetSignalTime >= 5:
+                    print(f"Server says: {message}")
+                    setSignalGreen(int(message))
+                    lastSetSignalTime = currentTime
             except Exception as e:
                 pass
 
@@ -317,6 +324,7 @@ def initialize():
 def setSignalGreen(signalIndex):
     global currentGreen, currentYellow
 
+
     # Set the current green signal to yellow
     signals[currentGreen].green = 0
     signals[currentGreen].yellow = defaultYellow
@@ -540,7 +548,6 @@ def Main():
         send(data())
         screen.blit(score_text, ((screenWidth - text_width) // 2, 10))  # Center top
         pygame.display.update()
-        clock.tick(250)  # Triple the clock tick speed
         if score<-200:
             for vehicle in simulation:
                 vehicle.starvation_timer_start = None

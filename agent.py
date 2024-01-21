@@ -34,7 +34,7 @@ class TrafficSignalEnv(gym.Env):
     def step(self, action):
         print(f"Selected Action: {action}")
         
-        # Perform the selected action and update the environment state
+
         if action < 4:  # Ignore invalid actions
             set_signal(action)
 
