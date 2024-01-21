@@ -5,38 +5,41 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>traffic signal</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <div class="welcome-page">
-        <h1>Save Traffic Man (●'◡'●)</h1>
+        <h1>(●'◡'●)</h1>
+        <h1>TRAFFFIX </h1>
         <h3>Stop 🔴 Ready 🟡 Go 🟢</h3>
     </div>
-
+    <br>
     <div class="questions" id="questions">
-        <h2>Answer all questions correctly to reveal the surprise text! 🎁</h2>
-        <p>Choose the correct answer for each question:</p>
-        <button onclick="showManualContent()">Manual</button>
-        <video id="manualVideo" controls style="display: none;">
-            <source src="your_manual_video_url.mp4" type="video/mp4">
+        <h2>Simulating Traffic Jams - Because Real Ones Just Weren't Enough</h2><br>
+        <p>We developed a simulated traffic environment and manually administered it to regulate traffic signals
+           <br> Click here for a little demo of our project</p><br>  
+        <button onclick="showManualContent()" class="btn btn-primary">Manual</button><br>
+        <video id="manualVideo" autoplay loop muted playsinline oncontextmenu="return false;" preload="auto">
+            <source src="videos/manual.mp4" type="video/mp4">
             Your browser does not support the video tag.
         </video>
         <br><br>
         <section id="botSection" style="display: none;">
             <div class="sub-text">
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque vel lorem sit amet quam congue euismod.<br><br>
-                <button onclick="showBotContent()">Bot</button>
+                Following manual management, we trained a reinforcement learning agent to evaluate its performance against manual control<br><br>
+                <button onclick="showBotContent()" class="btn btn-primary">Reinforcement agent</button>
             </div>
         </section>
         <br><br><br>
-        <video id="botVideo" controls style="display: none;">
-            <source src="your_bot_video_url.mp4" type="video/mp4">
+        <video id="botVideo" autoplay loop muted playsinline oncontextmenu="return false;" preload="auto">
+            <source src="videos/bot.mp4" type="video/mp4">
             Your browser does not support the video tag.
         </video>
         <br><br>
         <section id="botContentSection" style="display: none;">
             <div class="sub-text">
-                Additional content for Bot.
+                The bot is in its initial phases, deciphering the simulation and engaging in communication through sockets
             </div>
         </section>
     </div>
@@ -72,88 +75,37 @@
         }
 
         function createAdditionalContent() {
-            // Create H1 tag
-            var h1Tag = document.createElement('h1');
-            h1Tag.textContent = 'Analysis of Blah Blah';
-            document.body.appendChild(h1Tag);
+                // Create H1 tag
+                var h1Tag = document.createElement('h1');
+                h1Tag.textContent = 'GitHub: ';
 
-            // Create canvas for the resized line chart
-            var lineChartCanvas = document.createElement('canvas');
-            lineChartCanvas.id = 'lineChart';
-            lineChartCanvas.width = 40; // Set the desired width
-            lineChartCanvas.height = 20; // Set the desired height
-            document.body.appendChild(lineChartCanvas);
+                // Create GitHub link
+                var githubLink = document.createElement('a');
+                githubLink.textContent = 'Trafffix'; // Replace with your GitHub link
+                githubLink.href = 'https://github.com/raaasin/traffic-optimization-frost-hacks'; // Replace with your GitHub repository URL
+                githubLink.target = '_blank'; // Open link in a new tab
+                h1Tag.appendChild(githubLink);
 
-            // Your data for the line chart (replace with your actual data)
-            var months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-            var rainfallData = [50, 40, 60, 30, 70, 80, 90, 100, 80, 60, 40, 30];
+                // Set font size for H1 tag
+                h1Tag.style.fontSize = '60px';
+                // Add CSS class to center the h1 tag
+                h1Tag.classList.add('centered');
 
-            // Create the resized line chart
-            var lineCtx = lineChartCanvas.getContext('2d');
-            new Chart(lineCtx, {
-                type: 'line',
-                data: {
-                    labels: months,
-                    datasets: [{
-                        label: 'Monthly Rainfall',
-                        data: rainfallData,
-                        borderColor: 'blue',
-                        borderWidth: 2,
-                        fill: false
-                    }]
-                },
-                options: {
-                    scales: {
-                        x: {
-                            type: 'category',
-                            labels: months
-                        },
-                        y: {
-                            beginAtZero: true
-                        }
-                    }
-                }
-            });
+                // Set text-align property to center
+                h1Tag.style.textAlign = 'center';
 
-            // Create canvas for the final pie chart
-            var pieChartCanvas = document.createElement('canvas');
-            pieChartCanvas.id = 'finalPieChart';
-            pieChartCanvas.width = 40; // Set the desired width
-            pieChartCanvas.height = 20; // Set the desired height
-            document.body.appendChild(pieChartCanvas);
+                // Append H1 tag to the body
+                document.body.appendChild(h1Tag);
+                h1Tag.appendChild(githubLink);
+    
+                // Set font size for H1 tag
+                h1Tag.style.fontSize = '30px';
+                // Add CSS class to center the h1 tag
+                h1Tag.classList.add('centered');
 
-            // Your data for the final pie chart (replace with your actual data)
-            var finalPieData = {
-                labels: ['Manual', 'Bot'],
-                datasets: [{
-                    data: [40, 60],
-                    backgroundColor: ['#e74c3c', '#3498db'],
-                    hoverBackgroundColor: ['#c0392b', '#2980b9']
-                }]
-            };
-
-            // Create the final pie chart
-            var pieCtx = pieChartCanvas.getContext('2d');
-            new Chart(pieCtx, {
-                type: 'pie',
-                data: finalPieData,
-                options: {
-                    title: {
-                        display: true,
-                        text: 'Bot vs Manual Distribution',
-                        fontSize: 16
-                    },
-                    plugins: {
-                        legend: {
-                            position: 'bottom'
-                        }
-                    },
-                    animation: {
-                        animateRotate: true
-                    }
-                }
-            });
-        }
-    </script>
+                // Append H1 tag to the body
+                document.body.appendChild(h1Tag);}
+        </script>
+    </div>
 </body>
 </html>
