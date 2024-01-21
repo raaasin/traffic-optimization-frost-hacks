@@ -12,7 +12,7 @@ import json
 
 # Default values of signal times
 defaultRed = 150
-defaultYellow = 1.2
+defaultYellow = 3
 defaultGreen = 20
 defaultMinimum = 10
 defaultMaximum = 60
@@ -433,7 +433,7 @@ def data():
 
 
 
-class Main:
+def Main():
     global score
     score_font = pygame.font.Font(None, 80) 
     thread4 = threading.Thread(name="simulationTime",target=simulationTime, args=()) 
@@ -532,7 +532,10 @@ class Main:
         screen.blit(score_text, ((screenWidth - text_width) // 2, 10))  # Center top
         pygame.display.update()
         if score<-200:
-            pygame.quit()
+            restart_script()
+def restart_script():
+    python = sys.executable
+    os.execl(python, python, * sys.argv)
+        
 Main()
-
   

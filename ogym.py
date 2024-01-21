@@ -6,7 +6,7 @@ import socket
 import threading
 import json
 from stable_baselines3 import PPO
-import subprocess
+import os
 
 client_sockets = []
 lock = threading.Lock()
@@ -21,7 +21,7 @@ class TrafficSignalEnv(gym.Env):
         self.observation_space = spaces.Box(low=0, high=101, shape=(8,), dtype=np.float32)
 
         self.state = np.zeros(8)
-        self.score_threshold = -200
+        self.score_threshold = -199
         self.wait_threshold = 20  # Adjust the wait threshold as needed
 
     def reset(self):
@@ -63,14 +63,7 @@ def reinforcement(data,env):
     score = data['S']
 
     env.state = np.array([A_cars, A_wait, B_cars, B_wait, C_cars, C_wait, D_cars, D_wait, score])
-
-    # Introduce a condition to choose the "wait" action based on total wait time
-    total_wait_time = sum([max(0, env.state[i] - 1) for i in range(1, 8, 2)])
-
-    if total_wait_time > env.wait_threshold:
-        action = 4  # 4 represents the "wait" action
-    else:
-        action = env.action_space.sample()
+    action = np.random.choice([4, env.action_space.sample()], p=[0.99, 0.01])
 
     return action
 
@@ -88,7 +81,7 @@ def handle_client(client_socket, env):
                 # Check if the score is below the threshold, restart the game
                 if 'S' in data and data['S'] < env.score_threshold:
                     print("Score is below the threshold. Restarting the game...")
-                    restart_game()
+                    set_signal(4)
 
                 # Continue with reinforcement logic
                 action = reinforcement(data,env)
@@ -97,7 +90,6 @@ def handle_client(client_socket, env):
                     set_signal(action)
 
                 # Introduce a delay (e.g., 2 seconds) to simulate the traffic signal reaction time
-                time.sleep(2)
 
             except json.JSONDecodeError:
                 try:
@@ -108,12 +100,6 @@ def handle_client(client_socket, env):
                 except Exception as e:
                     print(f"Error processing received data: {e}")
                     continue
-
-def restart_game():
-    # Add logic to restart the game here
-    # You might want to start a new instance of the simulation.py script or perform other relevant actions.
-    # Example:
-    subprocess.run(["python", "bot.py"])
 
 def set_signal(x):
     x = str(x)
