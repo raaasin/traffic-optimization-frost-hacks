@@ -9,6 +9,7 @@ import numpy as np
 import socket
 import json
 import subprocess
+os.environ["SDL_VIDEODRIVER"] = "dummy"
 
 
 # Default values of signal times
@@ -74,11 +75,11 @@ def receive_messages():
             message = client_socket.recv(1024).decode('utf-8')
 
             if int(message) == currentGreen:
-                pass
+                continue
             try:
                 currentTime = time.time()
                 if currentTime - lastSetSignalTime >= 5:
-                    print(f"Server says: {message}")
+                    #print(f"Server says: {message}")
                     setSignalGreen(int(message))
                     lastSetSignalTime = currentTime
             except Exception as e:
@@ -324,7 +325,6 @@ def initialize():
 def setSignalGreen(signalIndex):
     global currentGreen, currentYellow
 
-
     # Set the current green signal to yellow
     signals[currentGreen].green = 0
     signals[currentGreen].yellow = defaultYellow
@@ -546,6 +546,10 @@ def Main():
         score_text = score_font.render(f"Score: {int(score)}", True, (0, 0, 0))
         text_width = score_text.get_width()
         send(data())
+        hehe=data()
+        nist=[hehe['A'][1],hehe['B'][1],hehe['C'][1],hehe['D'][1]]
+        print(nist,"Current",currentGreen,"score",int(score))
+
         screen.blit(score_text, ((screenWidth - text_width) // 2, 10))  # Center top
         pygame.display.update()
         if score<-200:

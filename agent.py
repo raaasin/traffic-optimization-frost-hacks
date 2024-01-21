@@ -6,9 +6,9 @@ import socket
 import threading
 import json
 from stable_baselines3 import PPO
-import os
-import subprocess
-
+from tqdm import tqdm
+import warnings
+warnings.filterwarnings("ignore")
 client_sockets = []
 lock = threading.Lock()
 
@@ -19,21 +19,22 @@ class TrafficSignalEnv(gym.Env):
         self.action_space = spaces.Discrete(5)  # Including the "wait" action
 
         # Flatten the observation space
-        self.observation_space = spaces.Box(low=0, high=101, shape=(8,), dtype=np.float32)
+        self.observation_space = spaces.Box(low=0, high=101, shape=(9,), dtype=np.float32)
 
-        self.state = np.zeros(8)
+        self.state = np.zeros(9)  # Adjust the size to 9
         self.score_threshold = -199
         self.wait_threshold = 20  # Adjust the wait threshold as needed
+        self.current_episode = 0
 
-    def reset(self, episode):
+
+    def reset(self):
         # Inform the agent that a new episode is starting
-        self.state = np.zeros(8)
-        print(f"Episode {episode} Reset")
-        return self.state
+        self.state = np.zeros(9)
+        #print(f"Episode {self.current_episode} Reset")
+        self.current_episode += 1  # Increment the episode counter
+        return self.state.copy()  # Ensure the shape is (8,)
 
     def step(self, action):
-        print(f"Selected Action: {action}")
-        
 
         if action < 4:  # Ignore invalid actions
             set_signal(action)
@@ -59,7 +60,7 @@ class TrafficSignalEnv(gym.Env):
         # Check for the episode termination condition
         done = self.state[-1] < self.score_threshold
 
-        print(f"Reward: {reward}, Done: {done}")
+        #print(f"Reward: {reward}, Done: {done}")
 
         return self.state, reward, done, {}
 
@@ -96,10 +97,10 @@ def handle_client(client_socket, env):
                 try:
                     data = eval(received_data)
                     if not isinstance(data, dict):
-                        print("Data is not a dictionary. Skipping iteration.")
+                        #print("Data is not a dictionary. Skipping iteration.")
                         continue
                 except Exception as e:
-                    print(f"Error processing received data: {e}")
+                    #print(f"Error processing received data: {e}")
                     continue
 def set_signal(x):
     x = str(x)
@@ -119,6 +120,24 @@ def main():
     client_sockets.append(client_socket)
     client_handler = threading.Thread(target=handle_client, args=(client_socket, env))
     client_handler.start()
+
+    # Training parameters
+    total_episodes = 1000
+
+    # Training loop with progress bar
+    for episode in tqdm(range(1, total_episodes + 1), desc="Training Progress"):
+        env.reset()
+        # Add your training logic here
+        
+        # For example, you can call PPO's `learn` method with appropriate parameters
+        model = PPO("MlpPolicy", env, verbose=0)
+        model.learn(total_timesteps=1000)
+
+    # After training is complete, you can save the model if needed
+    model.save("trained_model")
+
+if __name__ == "__main__":
+    main()
 
 if __name__ == "__main__":
     main()
