@@ -28,9 +28,12 @@ class TrafficSignalEnv(gym.Env):
     def reset(self):
         # Inform the agent that a new episode is starting
         self.state = np.zeros(8)
+        print("Episode Reset")
         return self.state
 
     def step(self, action):
+        print(f"Selected Action: {action}")
+        
         # Perform the selected action and update the environment state
         if action < 4:  # Ignore invalid actions
             set_signal(action)
@@ -56,14 +59,19 @@ class TrafficSignalEnv(gym.Env):
         # Check for the episode termination condition
         done = self.state[-1] < self.score_threshold
 
+        print(f"Wait Times: {wait_times}, Total Wait Time: {total_wait_time}, Reward: {reward}, Done: {done}")
+
         return self.state, reward, done, {}
 
-def reinforcement(data,env):
+def reinforcement(data, env):
     A_cars, B_cars, C_cars, D_cars = data['A'][0], data['B'][0], data['C'][0], data['D'][0]
     A_wait, B_wait, C_wait, D_wait = data['A'][1], data['B'][1], data['C'][1], data['D'][1]
     score = data['S']
 
     env.state = np.array([A_cars, A_wait, B_cars, B_wait, C_cars, C_wait, D_cars, D_wait, score])
+    
+    print(f"Received Data: A_cars={A_cars}, B_cars={B_cars}, C_cars={C_cars}, D_cars={D_cars}, A_wait={A_wait}, B_wait={B_wait}, C_wait={C_wait}, D_wait={D_wait}, Score={score}")
+    
     action = np.random.choice([4, env.action_space.sample()], p=[0.99, 0.01])
 
     return action
@@ -80,12 +88,13 @@ def handle_client(client_socket, env):
                 data = json.loads(received_data)
 
                 # Continue with reinforcement logic
-                action = reinforcement(data,env)
+                action = reinforcement(data, env)
 
                 if action < 4:  # Ignore invalid actions
                     set_signal(action)
 
                 # Introduce a delay (e.g., 2 seconds) to simulate the traffic signal reaction time
+                time.sleep(2)
 
             except json.JSONDecodeError:
                 try:
@@ -96,7 +105,6 @@ def handle_client(client_socket, env):
                 except Exception as e:
                     print(f"Error processing received data: {e}")
                     continue
-
 def set_signal(x):
     x = str(x)
     for client_socket in client_sockets:
