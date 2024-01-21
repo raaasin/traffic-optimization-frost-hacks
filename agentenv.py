@@ -199,11 +199,11 @@ class Vehicle(pygame.sprite.Sprite):
             if wait_time > 25:
                 pass
             elif wait_time > 20 and wait_time <= 25:
-                score += 1
-            elif wait_time > 15:
-                score += 2
-            elif wait_time >= 0:
                 score += 3
+            elif wait_time > 15:
+                score += 4
+            elif wait_time >= 0:
+                score += 5
             self.starvation_timer_start = None        
         if(self.direction=='right'):
             if(self.crossed==0 and self.x+self.currentImage.get_rect().width>stopLines[self.direction]):   # if the image has crossed stop line now
@@ -397,7 +397,7 @@ def generateVehicles():
         elif(temp<a[3]):
             direction_number = 3
         Vehicle(lane_number, vehicleTypes[vehicle_type], direction_number, directionNumbers[direction_number], will_turn)
-        time.sleep(0.33)
+        time.sleep(0.75)
 
 def simulationTime():
     global timeElapsed, simTime
@@ -524,8 +524,8 @@ def Main():
         for vehicle in simulation:  
             if vehicle.starvation_timer_start is not None:
                 wait_time = time.time() - vehicle.starvation_timer_start
-                if wait_time > 25:
-                    score -=0.09
+                if wait_time > 35:
+                    score -=0.02
                 font = pygame.font.Font(None, 25)
                 text = font.render(f"{wait_time:.2f}", True, (0, 0, 0))
                 screen.blit(text, (vehicle.x, vehicle.y - 20))
