@@ -25,10 +25,10 @@ class TrafficSignalEnv(gym.Env):
         self.score_threshold = -199
         self.wait_threshold = 20  # Adjust the wait threshold as needed
 
-    def reset(self):
+    def reset(self, episode):
         # Inform the agent that a new episode is starting
         self.state = np.zeros(8)
-        print("Episode Reset")
+        print(f"Episode {episode} Reset")
         return self.state
 
     def step(self, action):
@@ -59,7 +59,7 @@ class TrafficSignalEnv(gym.Env):
         # Check for the episode termination condition
         done = self.state[-1] < self.score_threshold
 
-        print(f"Wait Times: {wait_times}, Total Wait Time: {total_wait_time}, Reward: {reward}, Done: {done}")
+        print(f"Reward: {reward}, Done: {done}")
 
         return self.state, reward, done, {}
 
@@ -70,9 +70,8 @@ def reinforcement(data, env):
 
     env.state = np.array([A_cars, A_wait, B_cars, B_wait, C_cars, C_wait, D_cars, D_wait, score])
     
-    print(f"Received Data: A_cars={A_cars}, B_cars={B_cars}, C_cars={C_cars}, D_cars={D_cars}, A_wait={A_wait}, B_wait={B_wait}, C_wait={C_wait}, D_wait={D_wait}, Score={score}")
     
-    action = np.random.choice([4, env.action_space.sample()], p=[0.99, 0.01])
+    action = np.random.choice([4, env.action_space.sample()], p=[0.995, 0.005])
 
     return action
 
@@ -92,9 +91,6 @@ def handle_client(client_socket, env):
 
                 if action < 4:  # Ignore invalid actions
                     set_signal(action)
-
-                # Introduce a delay (e.g., 2 seconds) to simulate the traffic signal reaction time
-                time.sleep(2)
 
             except json.JSONDecodeError:
                 try:

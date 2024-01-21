@@ -13,7 +13,7 @@ import subprocess
 
 # Default values of signal times
 defaultRed = 150
-defaultYellow = 3
+defaultYellow = 5
 defaultGreen = 20
 defaultMinimum = 10
 defaultMaximum = 60
@@ -444,6 +444,7 @@ def restart_script():
 
 def Main():
     pygame.init()
+    clock = pygame.time.Clock()
     global score
     score_font = pygame.font.Font(None, 80) 
     thread4 = threading.Thread(name="simulationTime",target=simulationTime, args=()) 
@@ -539,6 +540,7 @@ def Main():
         send(data())
         screen.blit(score_text, ((screenWidth - text_width) // 2, 10))  # Center top
         pygame.display.update()
+        clock.tick(250)  # Triple the clock tick speed
         if score<-200:
             for vehicle in simulation:
                 vehicle.starvation_timer_start = None
