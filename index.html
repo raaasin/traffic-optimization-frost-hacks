@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>traffic signal</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="welcome-page">
+        <h1>Save Traffic Man (●'◡'●)</h1>
+        <h3>Stop 🔴 Ready 🟡 Go 🟢</h3>
+    </div>
+
+    <div class="questions" id="questions">
+        <h2>Answer all questions correctly to reveal the surprise text! 🎁</h2>
+        <p>Choose the correct answer for each question:</p>
+        <button onclick="showManualContent()">Manual</button>
+        <video id="manualVideo" controls style="display: none;">
+            <source src="your_manual_video_url.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+        <br><br>
+        <section id="botSection" style="display: none;">
+            <div class="sub-text">
+                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque vel lorem sit amet quam congue euismod.<br><br>
+                <button onclick="showBotContent()">Bot</button>
+            </div>
+        </section>
+        <br><br><br>
+        <video id="botVideo" controls style="display: none;">
+            <source src="your_bot_video_url.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+        <br><br>
+        <section id="botContentSection" style="display: none;">
+            <div class="sub-text">
+                Additional content for Bot.
+            </div>
+        </section>
+    </div>
+
+    <div class="traffic-signal"></div>
+
+    <script>
+        function showManualContent() {
+            var video = document.getElementById('manualVideo');
+            var botSection = document.getElementById('botSection');
+            var botVideo = document.getElementById('botVideo');
+            var botContentSection = document.getElementById('botContentSection');
+
+            video.style.display = 'block';
+            botSection.style.display = 'block';
+            botVideo.style.display = 'none';
+            botContentSection.style.display = 'none';
+        }
+
+        function showBotContent() {
+            var botVideo = document.getElementById('botVideo');
+            var botContentSection = document.getElementById('botContentSection');
+            var manualVideo = document.getElementById('manualVideo');
+            var botSection = document.getElementById('botSection');
+
+            botVideo.style.display = 'block';
+            botContentSection.style.display = 'block';
+            manualVideo.style.display = 'block';
+            botSection.style.display = 'block';
+
+            createAdditionalContent();
+        
+        }
+
+        function createAdditionalContent() {
+            // Create H1 tag
+            var h1Tag = document.createElement('h1');
+            h1Tag.textContent = 'Analysis of Blah Blah';
+            document.body.appendChild(h1Tag);
+
+            // Create canvas for the resized line chart
+            var lineChartCanvas = document.createElement('canvas');
+            lineChartCanvas.id = 'lineChart';
+            lineChartCanvas.width = 40; // Set the desired width
+            lineChartCanvas.height = 20; // Set the desired height
+            document.body.appendChild(lineChartCanvas);
+
+            // Your data for the line chart (replace with your actual data)
+            var months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+            var rainfallData = [50, 40, 60, 30, 70, 80, 90, 100, 80, 60, 40, 30];
+
+            // Create the resized line chart
+            var lineCtx = lineChartCanvas.getContext('2d');
+            new Chart(lineCtx, {
+                type: 'line',
+                data: {
+                    labels: months,
+                    datasets: [{
+                        label: 'Monthly Rainfall',
+                        data: rainfallData,
+                        borderColor: 'blue',
+                        borderWidth: 2,
+                        fill: false
+                    }]
+                },
+                options: {
+                    scales: {
+                        x: {
+                            type: 'category',
+                            labels: months
+                        },
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+
+            // Create canvas for the final pie chart
+            var pieChartCanvas = document.createElement('canvas');
+            pieChartCanvas.id = 'finalPieChart';
+            pieChartCanvas.width = 40; // Set the desired width
+            pieChartCanvas.height = 20; // Set the desired height
+            document.body.appendChild(pieChartCanvas);
+
+            // Your data for the final pie chart (replace with your actual data)
+            var finalPieData = {
+                labels: ['Manual', 'Bot'],
+                datasets: [{
+                    data: [40, 60],
+                    backgroundColor: ['#e74c3c', '#3498db'],
+                    hoverBackgroundColor: ['#c0392b', '#2980b9']
+                }]
+            };
+
+            // Create the final pie chart
+            var pieCtx = pieChartCanvas.getContext('2d');
+            new Chart(pieCtx, {
+                type: 'pie',
+                data: finalPieData,
+                options: {
+                    title: {
+                        display: true,
+                        text: 'Bot vs Manual Distribution',
+                        fontSize: 16
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    },
+                    animation: {
+                        animateRotate: true
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>
