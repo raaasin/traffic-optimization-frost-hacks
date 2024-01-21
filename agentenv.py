@@ -9,7 +9,6 @@ import numpy as np
 import socket
 import json
 import subprocess
-os.environ["SDL_VIDEODRIVER"] = "dummy"
 
 
 # Default values of signal times
@@ -24,14 +23,13 @@ noOfSignals = 4
 simTime = 9999999     # change this to change time of simulation
 timeElapsed = 0
 
-currentGreen = 0   # Indicates which signal is green
+currentGreen = 0  
 nextGreen = (currentGreen+1)%noOfSignals
-currentYellow = 0   # Indicates whether yellow signal is on or off 
+currentYellow = 0   
 score=0
 
 speeds = {'car1':2.6,'car2':3,'truck2':3,'truck1':3.9,'bus':4,'bike1':3,'bike2':5,'auto':3}  # average speeds of vehicles
 
-# Coordinates of start
 x = {'right':[0,0,0], 'down':[755,727,697], 'left':[1400,1400,1400], 'up':[602,627,657]}    
 y = {'right':[348,370,398], 'down':[0,0,0], 'left':[498,466,436], 'up':[800,800,800]}
 
@@ -39,7 +37,6 @@ vehicles = {'right': {0:[], 1:[], 2:[], 'crossed':0}, 'down': {0:[], 1:[], 2:[],
 vehicleTypes = {0:'car1', 1:'car2',2:'truck2',3:'truck1',4:'bus',5:'bike1',6:'bike2',7:'auto'}
 directionNumbers = {0:'right', 1:'down', 2:'left', 3:'up'}
 
-# Coordinates of signal image, timer, and vehicle count
 signalCoods = [(530,230),(810,230),(810,570),(530,570)]
 signalTimerCoods = [(530,210),(810,210),(810,550),(530,550)]
 vehicleCountCoods = [(480,210),(880,210),(880,550),(480,550)]
