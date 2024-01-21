@@ -73,8 +73,7 @@ def receive_messages():
         try:
             # Receive a message from the server
             message = client_socket.recv(1024).decode('utf-8')
-
-            if int(message) == currentGreen:
+            if (int(message) == currentGreen) or (int(message) > 3):
                 continue
             try:
                 currentTime = time.time()
@@ -547,7 +546,7 @@ def Main():
         text_width = score_text.get_width()
         send(data())
         hehe=data()
-        nist=[hehe['A'][1],hehe['B'][1],hehe['C'][1],hehe['D'][1]]
+        nist=[int(hehe['A'][1]),int(hehe['B'][1]),int(hehe['C'][1]),int(hehe['D'][1])]
         print(nist,"Current",currentGreen,"score",int(score))
 
         screen.blit(score_text, ((screenWidth - text_width) // 2, 10))  # Center top
