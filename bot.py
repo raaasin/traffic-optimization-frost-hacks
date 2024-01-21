@@ -8,6 +8,7 @@ import os
 import numpy as np
 import socket
 import json
+import subprocess
 
 
 # Default values of signal times
@@ -55,7 +56,7 @@ rotationAngle = 3
 gap = 15    # stopping gap
 gap2 = 15   # moving gap
 
-pygame.init()
+
 simulation = pygame.sprite.Group()
 client_sockets = []
 lock = threading.Lock()
@@ -324,6 +325,12 @@ def setSignalGreen(signalIndex):
     # After a delay, set the selected signal to green
     def setGreen():
         global currentGreen, currentYellow
+        if 0 <= currentGreen < len(signals):
+            signals[currentGreen].yellow = 0
+        else:
+            # Handle the case when currentGreen is out of range
+            print("Index out of range:", currentGreen)
+
         signals[currentGreen].yellow = 0
         signals[currentGreen].red = defaultRed
         currentGreen = signalIndex
@@ -431,9 +438,12 @@ def data():
 
     return combined_data
 
-
+def restart_script():
+    python = sys.executable
+    subprocess.run([python, "bot.py"])
 
 def Main():
+    pygame.init()
     global score
     score_font = pygame.font.Font(None, 80) 
     thread4 = threading.Thread(name="simulationTime",target=simulationTime, args=()) 
@@ -473,9 +483,7 @@ def Main():
 
     while True:
         for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                sys.exit()
-            elif event.type == pygame.MOUSEBUTTONDOWN:
+            if event.type == pygame.MOUSEBUTTONDOWN:
                 # Get mouse position
                 pos = pygame.mouse.get_pos()
 
@@ -532,10 +540,15 @@ def Main():
         screen.blit(score_text, ((screenWidth - text_width) // 2, 10))  # Center top
         pygame.display.update()
         if score<-200:
-            restart_script()
-def restart_script():
-    python = sys.executable
-    os.execl(python, python, * sys.argv)
+            for vehicle in simulation:
+                vehicle.starvation_timer_start = None
+                vehicle.crossed = 1
+                vehicle.kill()
+            for i in range(0,3):
+                for j in range(1,3):
+                    vehicles[directionNumbers[i]][j] = []
+            score=0
+
         
 Main()
   

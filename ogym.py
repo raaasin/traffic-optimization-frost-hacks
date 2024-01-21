@@ -7,6 +7,7 @@ import threading
 import json
 from stable_baselines3 import PPO
 import os
+import subprocess
 
 client_sockets = []
 lock = threading.Lock()
@@ -77,11 +78,6 @@ def handle_client(client_socket, env):
         with lock:
             try:
                 data = json.loads(received_data)
-
-                # Check if the score is below the threshold, restart the game
-                if 'S' in data and data['S'] < env.score_threshold:
-                    print("Score is below the threshold. Restarting the game...")
-                    set_signal(4)
 
                 # Continue with reinforcement logic
                 action = reinforcement(data,env)
